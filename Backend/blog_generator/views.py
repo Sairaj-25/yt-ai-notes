@@ -1,24 +1,21 @@
 # Django shortcuts for rendering templates and redirecting users
 from django.shortcuts import render, redirect
 
-# Django authentication utilities
+# Django authentication utilities (Restored to default Django User model)
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
-# CSRF exemption for API-style POST requests (used for AJAX/fetch)
+# CSRF exemption for API-style POST requests
 from django.views.decorators.csrf import csrf_exempt
 
 # Used to send JSON responses instead of HTML
 from django.http import JsonResponse
-
-# Access Django settings (MEDIA_ROOT, etc.)
 from django.conf import settings
 
 # Standard libraries
-import json              # Parse JSON request bodies
-import os                # File handling + environment variables
-import time              # (Optional) delays / retries
+import json
+import os
 
 # YouTube audio download library
 from yt_dlp import YoutubeDL
@@ -26,17 +23,17 @@ from yt_dlp import YoutubeDL
 # AssemblyAI for speech-to-text
 import assemblyai as aai
 
-# OpenAI modern client (v1+)
-from openai import OpenAI
-from openai import OpenAIError, RateLimitError, AuthenticationError
+# Google Gemini SDK (Modern)
+from google import genai
+from google.genai import types
 
 
 # -----------------------------
 # GLOBAL CLIENT CONFIGURATION
 # -----------------------------
 
-# Create OpenAI client using API key from environment variable
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Configure Gemini Client using API key from environment variable
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Set AssemblyAI API key from environment variable
 aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
@@ -46,29 +43,24 @@ aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 # HOME PAGE VIEW
 # -----------------------------
 
-@login_required  # Ensures only logged-in users can access this page
+@login_required
 def index(request):
-    return render(request, "index.html")  # Renders the homepage template
+    return render(request, "index.html")
 
 
 # -----------------------------
 # MAIN BLOG GENERATION API
 # -----------------------------
 
-@csrf_exempt  # Disable CSRF since this is an API-style POST request
+@csrf_exempt
 def generate_blog(request):
-    # Allow only POST requests
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
     try:
-        # Parse JSON body from frontend fetch request
         data = json.loads(request.body)
-
-        # Extract YouTube link from request
         yt_link = data.get("link")
 
-        # Validate input
         if not yt_link:
             return JsonResponse({"error": "YouTube link is required"}, status=400)
 
@@ -85,12 +77,12 @@ def generate_blog(request):
     if not transcription:
         return JsonResponse({"error": "Failed to get transcript"}, status=500)
 
-    # Generate blog article from transcript using OpenAI
+    # Generate blog article from transcript using Gemini
     blog_content = generate_blog_from_transcription(transcription)
-    if not blog_content:
-        return JsonResponse({"error": "Failed to generate blog article"}, status=500)
+    if not blog_content or "An unexpected error occurred" in blog_content:
+        return JsonResponse({"error": blog_content}, status=500)
 
-    # Return generated content as JSON (used by frontend)
+    # Return generated content as JSON
     return JsonResponse({
         "title": title,
         "content": blog_content
@@ -98,139 +90,118 @@ def generate_blog(request):
 
 
 # -----------------------------
-# YOUTUBE TITLE FETCHER
+# HELPER FUNCTIONS
 # -----------------------------
 
 def yt_title(link):
-    """
-    Extracts the video title without downloading the video
-    """
+    """Extracts the video title without downloading the video."""
     try:
-        # YoutubeDL fetches metadata only (download=False)
         with YoutubeDL() as ydl:
             info = ydl.extract_info(link, download=False)
-
-            # Safely return title
             return info.get("title", "Unknown Title")
-
     except Exception as e:
         print(f"YouTube title error: {e}")
         return None
 
 
-# -----------------------------
-# AUDIO DOWNLOADER
-# -----------------------------
-
 def download_audio(link):
-    """
-    Downloads YouTube audio and converts it to MP3
-    """
+    """Downloads YouTube audio and converts it to MP3."""
     try:
         ydl_opts = {
-            "format": "bestaudio/best",  # Best available audio
+            "format": "bestaudio/best",
             "outtmpl": os.path.join(settings.MEDIA_ROOT, "%(title)s.%(ext)s"),
-
-            # Converts audio to MP3 using FFmpeg
             "postprocessors": [{
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
                 "preferredquality": "192",
             }],
         }
-
-        # Download audio
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(link, download=True)
-
-            # Construct final mp3 file path
             mp3_path = os.path.splitext(ydl.prepare_filename(info))[0] + ".mp3"
             return mp3_path
-
     except Exception as e:
         print(f"Audio download error: {e}")
         return None
 
 
-# -----------------------------
-# TRANSCRIPTION USING ASSEMBLYAI
-# -----------------------------
-
 def get_transcription(link):
-    """
-    Converts YouTube audio into text using AssemblyAI
-    """
+    """Converts YouTube audio into text using AssemblyAI."""
     try:
-        # Download audio from YouTube
         audio_file = download_audio(link)
         if not audio_file:
             return None
 
-        # Create AssemblyAI transcriber
         transcriber = aai.Transcriber()
-
-        # Perform speech-to-text
         transcript = transcriber.transcribe(audio_file)
 
-        # Delete audio file after transcription (cleanup)
         os.remove(audio_file)
-
-        # Return transcript text
         return transcript.text
-
     except Exception as e:
         print(f"Transcription error: {e}")
         return None
 
 
-# -----------------------------
-# BLOG GENERATION USING OPENAI
-# -----------------------------
-
 def generate_blog_from_transcription(transcription):
-    """
-    Uses OpenAI to generate a structured blog article
-    """
+    """Uses Google Gemini to generate a structured blog article."""
     try:
-        # Prompt sent to OpenAI
         prompt = f"""
-Write a professional blog article using the following transcript.
-The article must include:
-- A catchy title
-- Introduction
-- Clear headings
-- Conclusion
+        You are a professional AI learning assistant.
+
+Convert this YouTube transcript into high-quality, structured revision notes.
+
+Instructions:
+
+• Extract only meaningful insights.
+• Remove filler, jokes, repetition, and promotions.
+• Organize content into sections with headings.
+• Use bullet points.
+• Highlight important keywords in bold.
+• Convert explanations into:
+  - Definitions
+  - Step-by-step processes
+  - Tables (if comparison discussed)
+  - Flowcharts (text format if needed)
+• Add examples separately under an “Examples” section.
+• Add a “Quick Revision Box” at the end.
+• Add “Actionable Steps” if the video is practical.
+• Keep output concise but complete.
+
+Output must look clean, like premium AI-generated notes.
+
+You are an expert academic note generator.
+Transform the provided content into professional, high-quality smart notes similar to NoteGPT.
+Summarize the following content into smart structured notes:
+
+- Use headings and subheadings
+- Bullet format only
+- Highlight keywords
+- Include summary box at end
+- Keep concise but comprehensive
+- Make it visually clean and revision-friendly
+
 
 Transcript:
 {transcription}
 """
-
-        # Call OpenAI Chat Completion API
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an expert blog writer."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,   # Creativity level
-            max_tokens=1500    # Response length
+        # Call Gemini API using the new google-genai SDK
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction="You are an expert blog writer.",
+                temperature=0.7,
+                max_output_tokens=8192, # Safe maximum limit
+            )
         )
-
-        # Extract and return generated text
-        return response.choices[0].message.content.strip()
-
-    except RateLimitError:
-        return "Rate limit exceeded. Please try again later."
-
-    except AuthenticationError:
-        return "Invalid OpenAI API key."
-
-    except OpenAIError as e:
-        return f"OpenAI error: {str(e)}"
+        return response.text.strip()
+    except Exception as e:
+        print(f"Gemini API error: {str(e)}")
+        return f"An unexpected error occurred: {str(e)}"
 
 
 # -----------------------------
-# AUTH FUNCTIONS (NO COMMENTS)
+# AUTH FUNCTIONS
 # -----------------------------
 
 def user_login(request):
