@@ -5,7 +5,7 @@
 🎯 It combines:
 - YouTube audio extraction via `yt-dlp`
 - Speech-to-text transcription with AssemblyAI
-- AI blog generation using OpenAI’s advanced models
+- AI blog generation using Gemini’s advanced models
 
 ---
 
@@ -27,7 +27,7 @@
 | Backend | Django |
 | YouTube Extraction | yt-dlp |
 | Transcription | AssemblyAI |
-| AI Content | OpenAI API |
+| AI Content | Gemini API |
 | Python Version | 3.9+ |
 | Database | Django ORM (SQLite default) |
 
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 🔧 Configuration
 Create a .env file in the project root:
 
-OPENAI_API_KEY="your_openai_api_key"
+GEMINI_API_KEY="your_gemini_api_key"
 ASSEMBLYAI_API_KEY="your_assemblyai_api_key"
 DJANGO_SECRET_KEY="your_django_secret_key"
 Then load environment variables in settings.py using python-dotenv or via system environment.
@@ -96,11 +96,11 @@ Transcription
 AssemblyAI generates a full transcript from audio.
 
 Blog Generation
-The transcript is passed to OpenAI to produce a structured blog article.
+The transcript is passed to Gemini to produce a structured blog article.
 
 ⚙️ Environment Variables
 Variable	Description
-OPENAI_API_KEY	Your OpenAI API key for AI content generation
+GEMINI_API_KEY	Your Gemini API key for AI content generation
 ASSEMBLYAI_API_KEY	Your AssemblyAI key for transcription
 DJANGO_SECRET_KEY	Secret key for Django project
 
