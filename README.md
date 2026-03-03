@@ -1,133 +1,153 @@
-# 📝 YT-AI-Blog
+# 📝 YT-AI-Blog: YouTube to AI Blog Generator
 
-**YT-AI-Blog** is a Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and uses AI to generate a professional-style blog article based on the video content.
+![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
+![Django Version](https://img.shields.io/badge/django-5.2-green)
+![Gemini AI](https://img.shields.io/badge/AI-Google_Gemini-orange)
+![AssemblyAI](https://img.shields.io/badge/Speech_to_Text-AssemblyAI-blueviolet)
 
-🎯 It combines:
-- YouTube audio extraction via `yt-dlp`
-- Speech-to-text transcription with AssemblyAI
-- AI blog generation using Gemini’s advanced models
+**YT-AI-Blog** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured blog article or study notes based on the video's content.
+
+🎯 **The Workflow:**
+1. **Extract:** Downloads high-quality audio from YouTube via `yt-dlp`.
+2. **Transcribe:** Converts speech to text accurately using AssemblyAI.
+3. **Generate:** Transforms the raw transcript into clean, readable blog content using the Gemini 2.5 Flash model.
 
 ---
 
 ## 🚀 Features
 
-✔️ Accept a YouTube video link  
-✔️ Download audio from the video  
-✔️ Convert audio to text transcript  
-✔️ Generate structured blog articles with AI  
-✔️ User authentication (login/signup)  
-✔️ JSON API for blog generation  
+- **Seamless URL Processing:** Simply paste a YouTube link to generate content.
+- **Automated Audio Extraction:** Handles audio downloading and formatting entirely in the background.
+- **Smart Formatting:** AI generates structured content with headings, bullet points, and actionable summaries.
+- **User Authentication:** Secure login and signup system for users to save and manage their generated blogs.
+- **RESTful-Style API:** Includes a dedicated JSON API endpoint (`/generate-blog/`) for background processing.
+- **Modern UI:** Clean, responsive frontend built with Tailwind CSS.
 
 ---
 
 ## 🧠 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Django |
-| YouTube Extraction | yt-dlp |
-| Transcription | AssemblyAI |
-| AI Content | Gemini API |
-| Python Version | 3.9+ |
-| Database | Django ORM (SQLite default) |
+| Component | Technology |
+| :--- | :--- |
+| **Backend Framework** | Django 5.2 |
+| **Video/Audio Downloader**| `yt-dlp` & `ffmpeg` |
+| **Speech-to-Text API** | AssemblyAI |
+| **Generative AI** | Google Gemini (`google-genai` SDK) |
+| **Frontend** | HTML5, Tailwind CSS, JavaScript |
+| **Database** | SQLite (Default Django ORM) |
 
 ---
 
-## 📦 Installation
+## ⚙️ Prerequisites
 
-1. Clone the repository
-bash
-git clone https://github.com/Sairaj-25/yt-ai-blog.git
+Before you begin, ensure you have the following installed on your machine:
+- **Python 3.9+**
+- **FFmpeg**: Required by `yt-dlp` to extract and process the audio files.
+  - *Windows*: Download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/) and add to your system PATH.
+  - *Mac*: `brew install ffmpeg`
+  - *Linux*: `sudo apt install ffmpeg`
+
+---
+
+## 📦 Installation & Setup
+
+### 1. Clone the repository
+```
+# bash
+git clone [https://github.com/Sairaj-25/yt-ai-blog.git](https://github.com/Sairaj-25/yt-ai-blog.git)
 cd yt-ai-blog
-2. Create and activate virtual environment
+```
+
+### 2. Set up a Virtual Environment
+```
+# Bash
 python -m venv .venv
-.venv\Scripts\activate   # Windows
-source .venv/bin/activate  # macOS/Linux
-3. Install dependencies
+
+# Windows
+.venv\Scripts\activate
+
+# macOS / Linux
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+ 
+# Bash
+```
 pip install -r requirements.txt
+```
 
-🔧 Configuration
-Create a .env file in the project root:
+### 4. Configure Environment Variables
+```
+Create a .env file in the root directory (alongside manage.py) and add your secret keys:
 
-GEMINI_API_KEY="your_gemini_api_key"
-ASSEMBLYAI_API_KEY="your_assemblyai_api_key"
-DJANGO_SECRET_KEY="your_django_secret_key"
-Then load environment variables in settings.py using python-dotenv or via system environment.
+Code snippet
+GEMINI_API_KEY="your_google_gemini_api_key_here"
+ASSEMBLYAI_API_KEY="your_assemblyai_api_key_here"
+DJANGO_SECRET_KEY="your_secure_django_secret_key_here"
+```
 
-Make sure ffmpeg and ffprobe are installed and added to your system PATH for audio conversion.
+### 5. Apply Database Migrations
+```
+Initialize the SQLite database and create the necessary tables for authentication and blog posts:
 
-🏁 Run the app
+# Bash
+python manage.py makemigrations
 python manage.py migrate
+
+```
+
+### 6. Run the Development Server
+```
+Bash
 python manage.py runserver
-Open your browser and navigate to:
+Open your browser and navigate to: http://127.0.0.1:8000/
 
-http://127.0.0.1:8000/
+```
 
-🧪 Usage
-Log in or create an account
+🧪 Usage Guide
 
-Enter a YouTube video link
+```
+Sign Up / Log In: Create an account to access the dashboard.
 
-Click “Generate Blog”
+Paste Link: On the home page, paste any valid YouTube video URL into the input field.
 
-Receive a structured blog article generated by AI
+Generate: Click the "Generate" button. A loading animation will appear while the backend extracts the audio, transcribes it, and queries Gemini.
 
+Read & Save: Once completed, the AI-generated blog article will appear on your screen, complete with formatting, summaries, and key takeaways.
 ```
 
 🗂 Project Structure
+```
 yt-ai-blog/
-├── ai_blog_app/           # Django project settings
-├── blog_generator/        # Main app with views, models
-├── media/                 # Downloaded audio files
-├── templates/             # HTML templates
-├── static/                # CSS, JS, assets
-├── .env                   # Environment variables (ignored)
-├── .gitignore
-├── requirements.txt
-└── manage.py
+├── ai_blog_app/           # Core Django project settings & routing
+├── blog_generator/        # Main application (Models, Views, URLs)
+├── media/                 # Temporary storage for downloaded audio files
+├── templates/             # HTML templates (Tailwind UI)
+├── static/                # Static assets (CSS, JS)
+├── .env                   # Environment variables (Ignored by Git)
+├── requirements.txt       # Python dependencies
+└── manage.py              # Django command-line utility
+```
+
+🤝 Contributing
+
+```
+Contributions, issues, and feature requests are welcome!
+
+Fork the Project
+
+Create your Feature Branch (git checkout -b feature/AmazingFeature)
+
+Commit your Changes (git commit -m 'Add some AmazingFeature')
+
+Push to the Branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
 
 ```
 
-🛠 How It Works
-Audio Extraction
-Uses yt-dlp to download audio from a YouTube video.
-
-Transcription
-AssemblyAI generates a full transcript from audio.
-
-Blog Generation
-The transcript is passed to Gemini to produce a structured blog article.
-
-⚙️ Environment Variables
-Variable	Description
-GEMINI_API_KEY	Your Gemini API key for AI content generation
-ASSEMBLYAI_API_KEY	Your AssemblyAI key for transcription
-DJANGO_SECRET_KEY	Secret key for Django project
-
-💡 Tips & Best Practices
-Rotate sensitive keys often
-
-Add rate limiting to backend API
-
-Validate YouTube URLs on frontend
-
-Store generated blogs in the database
-
-📘 Dependencies
-See all required Python packages in:
-
-requirements.txt
-
-
-🫶 Contributing
-Fork this repository
-
-Create a branch (git checkout -b feature/awesome-feature)
-
-Commit your changes
-
-Push and open a pull request
-
-📞 Contact
-Created by Sairaj
-GitHub: https://github.com/Sairaj-25
+## Project Link:
+```
+https://github.com/Sairaj-25/yt-ai-blog
+```
