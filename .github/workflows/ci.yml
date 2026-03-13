@@ -47,7 +47,7 @@ jobs:
     # Run tests on multiple Python versions to guarantee compatibility
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
       fail-fast: false
     
     env:
