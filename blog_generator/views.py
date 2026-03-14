@@ -7,16 +7,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
 # CSRF exemption for API-style POST requests
-from django.views.decorators.csrf import csrf_exempt
 
 # Used to send JSON responses instead of HTML
-from django.http import JsonResponse
 from django.conf import settings
 
 from blog_generator.models import BlogPost
 
 # Standard libraries
-import json
 import os
 
 # YouTube audio download library
@@ -50,26 +47,34 @@ def index(request):
 
 # MAIN BLOG GENERATION API
 
+
 @login_required
 def generate_blog(request):
     if request.method != "POST":
-        return render(request, "partials/error.html", {"error": "Invalid request method"})
+        return render(
+            request, "partials/error.html", {"error": "Invalid request method"}
+        )
 
     yt_link = request.POST.get("link")
 
     if not yt_link:
-        return render(request, "partials/error.html", {"error": "YouTube link is required."})
-
+        return render(
+            request, "partials/error.html", {"error": "YouTube link is required."}
+        )
 
     # Fetch YouTube video title
     title = yt_title(yt_link)
     if not title:
-        return render(request, "partials/error.html", {"error": "Failed to fetch YouTube title."})
+        return render(
+            request, "partials/error.html", {"error": "Failed to fetch YouTube title."}
+        )
 
     # Convert YouTube audio → text transcript
     transcription = get_transcription(yt_link)
     if not transcription:
-        return render(request, "partials/error.html", {"error": "Failed to get transcript."})
+        return render(
+            request, "partials/error.html", {"error": "Failed to get transcript."}
+        )
 
     # Generate blog article from transcript using Gemini
     blog_content = generate_blog_from_transcription(transcription)
@@ -81,10 +86,7 @@ def generate_blog(request):
         user=request.user, youtube_link=yt_link, title=title, content=blog_content
     )
 
-    context = {
-        "title": title,
-        "content": blog_content
-    }
+    context = {"title": title, "content": blog_content}
     return render(request, "partials/blog_result.html", context)
 
 
@@ -101,7 +103,10 @@ def yt_title(link):
         print(f"YouTube title error: {e}")
         return None
 
+
 audio_file = None
+
+
 def download_audio(link):
     """Downloads YouTube audio and converts it to MP3."""
     try:
@@ -140,7 +145,7 @@ def get_transcription(link):
     except Exception as e:
         print(f"Transcription error: {e}")
         return None
-    
+
     finally:
         # Always clean up the file, even if an error occurs above
         if audio_file and os.path.exists(audio_file):
