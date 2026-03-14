@@ -50,44 +50,42 @@ def index(request):
 
 # MAIN BLOG GENERATION API
 
-
-@csrf_exempt
+@login_required
 def generate_blog(request):
     if request.method != "POST":
-        return JsonResponse({"error": "Invalid request method"}, status=405)
+        return render(request, "partials/error.html", {"error": "Invalid request method"})
 
-    try:
-        data = json.loads(request.body)
-        yt_link = data.get("link")
+    yt_link = request.POST.get("link")
 
-        if not yt_link:
-            return JsonResponse({"error": "YouTube link is required"}, status=400)
+    if not yt_link:
+        return render(request, "partials/error.html", {"error": "YouTube link is required."})
 
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON data"}, status=400)
 
     # Fetch YouTube video title
     title = yt_title(yt_link)
     if not title:
-        return JsonResponse({"error": "Failed to fetch YouTube title"}, status=500)
+        return render(request, "partials/error.html", {"error": "Failed to fetch YouTube title."})
 
     # Convert YouTube audio → text transcript
     transcription = get_transcription(yt_link)
     if not transcription:
-        return JsonResponse({"error": "Failed to get transcript"}, status=500)
+        return render(request, "partials/error.html", {"error": "Failed to get transcript."})
 
     # Generate blog article from transcript using Gemini
     blog_content = generate_blog_from_transcription(transcription)
     if not blog_content or "An unexpected error occurred" in blog_content:
-        return JsonResponse({"error": blog_content}, status=500)
+        return render(request, "partials/error.html", {"error": blog_content})
 
     # Save to datbase
     new_blog = BlogPost.objects.create(
         user=request.user, youtube_link=yt_link, title=title, content=blog_content
     )
 
-    # Return generated content as JSON
-    return JsonResponse({"id": new_blog.id, "title": title, "content": blog_content})
+    context = {
+        "title": title,
+        "content": blog_content
+    }
+    return render(request, "partials/blog_result.html", context)
 
 
 # HELPER FUNCTIONS
@@ -103,20 +101,21 @@ def yt_title(link):
         print(f"YouTube title error: {e}")
         return None
 
-
+audio_file = None
 def download_audio(link):
     """Downloads YouTube audio and converts it to MP3."""
     try:
         ydl_opts = {
-            "format": "bestaudio/best",
+            "format": "worstaudio/worst",
             "outtmpl": os.path.join(settings.MEDIA_ROOT, "%(title)s.%(ext)s"),
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
                     "preferredcodec": "mp3",
-                    "preferredquality": "192",
+                    "preferredquality": "64",
                 }
             ],
+            # "quiet": True, # keep console clean
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(link, download=True)
@@ -136,12 +135,16 @@ def get_transcription(link):
 
         transcriber = aai.Transcriber()
         transcript = transcriber.transcribe(audio_file)
-
-        os.remove(audio_file)
         return transcript.text
+
     except Exception as e:
         print(f"Transcription error: {e}")
         return None
+    
+    finally:
+        # Always clean up the file, even if an error occurs above
+        if audio_file and os.path.exists(audio_file):
+            os.remove(audio_file)
 
 
 def generate_blog_from_transcription(transcription):
