@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.conf import settings
 
+from blog_generator.models import BlogPost
+
 # Standard libraries
 import json
 import os
@@ -27,9 +29,9 @@ import assemblyai as aai
 from google import genai
 from google.genai import types
 
-# -----------------------------
+
 # GLOBAL CLIENT CONFIGURATION
-# -----------------------------
+
 
 # Configure Gemini Client using API key from environment variable
 gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -38,9 +40,7 @@ gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 
 
-# -----------------------------
 # HOME PAGE VIEW
-# -----------------------------
 
 
 @login_required
@@ -48,9 +48,7 @@ def index(request):
     return render(request, "index.html")
 
 
-# -----------------------------
 # MAIN BLOG GENERATION API
-# -----------------------------
 
 
 @csrf_exempt
@@ -83,13 +81,16 @@ def generate_blog(request):
     if not blog_content or "An unexpected error occurred" in blog_content:
         return JsonResponse({"error": blog_content}, status=500)
 
+    # Save to datbase
+    new_blog = BlogPost.objects.create(
+        user=request.user, youtube_link=yt_link, title=title, content=blog_content
+    )
+
     # Return generated content as JSON
-    return JsonResponse({"title": title, "content": blog_content})
+    return JsonResponse({"id": new_blog.id, "title": title, "content": blog_content})
 
 
-# -----------------------------
 # HELPER FUNCTIONS
-# -----------------------------
 
 
 def yt_title(link):
@@ -201,9 +202,7 @@ Transcript:
         return f"An unexpected error occurred: {str(e)}"
 
 
-# -----------------------------
 # AUTH FUNCTIONS
-# -----------------------------
 
 
 def user_login(request):
