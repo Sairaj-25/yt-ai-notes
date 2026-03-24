@@ -9,7 +9,7 @@
 🎯 It combines:
 - YouTube audio extraction via `yt-dlp`
 - Speech-to-text transcription with AssemblyAI
-- AI blog generation using OpenAI’s advanced models
+- AI blog generation using Gemini’s Flash
 
 **YT-AI-Notes** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured blog article or study notes based on the video's content.
 
@@ -139,24 +139,6 @@ yt-ai-blog/
 └── manage.py              # Django command-line utility
 ```
 
-🤝 Contributing
 
+---
 
-- Contributions, issues, and feature requests are welcome!
-
-- Fork the Project
-```
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-
-Push to the Branch (git push origin feature/AmazingFeature)
-
-Open a Pull Request
-
-```
-
-## Project Link:
-```
-https://github.com/Sairaj-25/yt-ai-blog
-```
