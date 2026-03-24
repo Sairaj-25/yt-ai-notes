@@ -1,4 +1,4 @@
-# 📝 YT-AI-Blog: YouTube to AI Blog Generator
+# 📝 YT-AI-Notes: YouTube to AI Notes Generator
 
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Django Version](https://img.shields.io/badge/django-5.2-green)
@@ -11,7 +11,7 @@
 - Speech-to-text transcription with AssemblyAI
 - AI blog generation using OpenAI’s advanced models
 
-**YT-AI-Blog** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured blog article or study notes based on the video's content.
+**YT-AI-Notes** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured blog article or study notes based on the video's content.
 
 🎯 **The Workflow:**
 1. **Extract:** Downloads high-quality audio from YouTube via `yt-dlp`.
