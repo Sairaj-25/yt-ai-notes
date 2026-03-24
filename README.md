@@ -9,14 +9,14 @@
 🎯 It combines:
 - YouTube audio extraction via `yt-dlp`
 - Speech-to-text transcription with AssemblyAI
-- AI blog generation using Gemini’s Flash
+- AI Notes generation using Gemini’s Flash
 
-**YT-AI-Notes** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured blog article or study notes based on the video's content.
+**YT-AI-Notes** is a powerful Django-powered web application that takes a YouTube video URL, extracts and transcribes the audio, and leverages Google's Gemini AI to generate a professional, highly-structured Notes article or study notes based on the video's content.
 
 🎯 **The Workflow:**
 1. **Extract:** Downloads high-quality audio from YouTube via `yt-dlp`.
 2. **Transcribe:** Converts speech to text accurately using AssemblyAI.
-3. **Generate:** Transforms the raw transcript into clean, readable blog content using the Gemini 2.5 Flash model.
+3. **Generate:** Transforms the raw transcript into clean, readable Notes content using the Gemini 2.5 Flash model.
 
 
 ---
@@ -26,8 +26,8 @@
 - **Seamless URL Processing:** Simply paste a YouTube link to generate content.
 - **Automated Audio Extraction:** Handles audio downloading and formatting entirely in the background.
 - **Smart Formatting:** AI generates structured content with headings, bullet points, and actionable summaries.
-- **User Authentication:** Secure login and signup system for users to save and manage their generated blogs.
-- **RESTful-Style API:** Includes a dedicated JSON API endpoint (`/generate-blog/`) for background processing.
+- **User Authentication:** Secure login and signup system for users to save and manage their generated Notess.
+- **RESTful-Style API:** Includes a dedicated JSON API endpoint (`/generate-Notes/`) for background processing.
 - **Modern UI:** Clean, responsive frontend built with Tailwind CSS.
 
 ---
@@ -51,8 +51,8 @@
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Sairaj-25/yt-ai-blog.git
-cd yt-ai-blog
+git clone https://github.com/Sairaj-25/yt-ai-Notes.git
+cd yt-ai-Notes
 ```
 
 - Before you begin, ensure you have the following installed on your machine:
@@ -68,8 +68,8 @@ cd yt-ai-blog
 
 ### 1. Clone the repository
 ```bash
-git clone [https://github.com/Sairaj-25/yt-ai-blog.git](https://github.com/Sairaj-25/yt-ai-blog.git)
-cd yt-ai-blog
+git clone [https://github.com/Sairaj-25/yt-ai-Notes.git](https://github.com/Sairaj-25/yt-ai-Notes.git)
+cd yt-ai-Notes
 ```
 
 ### 2. Set up a Virtual Environment
@@ -98,7 +98,7 @@ DJANGO_SECRET_KEY="your_secure_django_secret_key_here"
 ```
 
 ### 5. Apply Database Migrations
-- Initialize the SQLite database and create the necessary tables for authentication and blog posts:
+- Initialize the SQLite database and create the necessary tables for authentication and Notes posts:
   
 ```bash
 python manage.py makemigrations
@@ -123,14 +123,14 @@ Paste Link: On the home page, paste any valid YouTube video URL into the input f
 
 Generate: Click the "Generate" button. A loading animation will appear while the backend extracts the audio, transcribes it, and queries Gemini.
 
-Read & Save: Once completed, the AI-generated blog article will appear on your screen, complete with formatting, summaries, and key takeaways.
+Read & Save: Once completed, the AI-generated Notes article will appear on your screen, complete with formatting, summaries, and key takeaways.
 ```
 
 🗂 Project Structure
 ```
-yt-ai-blog/
-├── ai_blog_app/           # Core Django project settings & routing
-├── blog_generator/        # Main application (Models, Views, URLs)
+yt-ai-Notes/
+├── ai_Notes_app/           # Core Django project settings & routing
+├── Notes_generator/        # Main application (Models, Views, URLs)
 ├── media/                 # Temporary storage for downloaded audio files
 ├── templates/             # HTML templates (Tailwind UI)
 ├── static/                # Static assets (CSS, JS)
